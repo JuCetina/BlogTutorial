@@ -15,7 +15,7 @@
 namespace App\Controller;
 
 use Cake\Controller\Controller;
-
+use Cake\Event\Event;
 /**
  * Application Controller
  *
@@ -34,9 +34,36 @@ class AppController extends Controller
      *
      * @return void
      */
-    public function initialize()
+    public function initialize() //Capa de autenticación
     {
-        parent::initialize();
         $this->loadComponent('Flash');
+        $this->loadComponent('Auth', [
+            'authorize' => ['Controller'], //Para poder usar isAuthorized
+            'loginRedirect' => [
+                'controller' => 'Articles',
+                'action' => 'index'
+            ],
+            'logoutRedirect' => [
+                'controller' => 'Pages',
+                'action' => 'display',
+                'home'
+            ]
+        ]);
+    }
+
+    public function isAuthorized($user)
+    {
+        // Admin puede acceder a todas las url
+        if (isset($user['role']) && $user['role'] === 'admin') {
+            return true;
+        }
+    
+        // Default se denega el acceso
+        return false;
+    }
+
+    public function beforeFilter(Event $event)
+    {
+        $this->Auth->allow(['index', 'view', 'display']); //Permite ingresar al index y a view sin necesidad de loguearse
     }
 }

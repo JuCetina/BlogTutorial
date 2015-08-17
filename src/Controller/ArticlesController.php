@@ -5,13 +5,13 @@ use App\Controller\AppController;
 use Cake\Network\Exception\NotFoundException;
 
 class ArticlesController extends AppController{
-	public function initialie(){
+	public function initialize(){
 		parent::initialize();
 		$this->loadComponent('Flash');
 	}
 
 	public function index(){
-		$this->set('articles', $this->Articles->find('all')); //Trae todos lo articulos y los pasa a la vista index.ctp
+		$this->set('articles', $this->Articles->find('all')); //Trae todos los articulos y los pasa a la vista index.ctp
 	}
 
 	public function view($id){
@@ -23,6 +23,9 @@ class ArticlesController extends AppController{
 		$article = $this->Articles->newEntity();
 		if ($this->request->is('post')) { //Si la peticion es POST
 			$article = $this->Articles->patchEntity($article, $this->request->data);
+			$article->user_id = $this->Auth->user('id'); //Obtiene el id del usuario logueado
+			$newData = ['user_id' => $this->Auth->user('id')]; //Guarda el id del usuario logueado en $newData
+        	$article = $this->Articles->patchEntity($article, $newData);
 			if($this->Articles->save($article)){ //Si se guarda en la base de datos (si cumple con todas la validaciones)
 				$this->Flash->success(__('Your article has been saved.')); //Mensaje de éxito al usuario
 				return $this->redirect(['action' => 'index']);	//Redirecciona al index		
@@ -31,8 +34,8 @@ class ArticlesController extends AppController{
 		}
 		$this->set('article', $article);
 
-		$categories = $this->Articles->Categories->find('treeList');
-        $this->set(compact('categories'));
+		$categories = $this->Articles->Categories->find('treeList'); //Obtiene el arbol de categorías
+        $this->set(compact('categories')); //Pasa los datos a la vista
 	}
 
 	public function edit($id = null){
@@ -56,5 +59,23 @@ class ArticlesController extends AppController{
 	        $this->Flash->success(__('The article with id: {0} has been deleted.', h($id))); //Mensaje de confirmación de eliminado al usuario 
 	        return $this->redirect(['action' => 'index']); //Redirecciona al index
     	}
+	}
+
+	public function isAuthorized($user)
+	{
+	    // Todos los uauarios registrados puede crear artículos
+	    if ($this->request->action === 'add') {
+	        return true;
+	    }
+	
+	    // Solo el creador de un artículo puede editarlo y borrarlo
+	    if (in_array($this->request->action, ['edit', 'delete'])) {
+	        $articleId = (int)$this->request->params['pass'][0];
+	        if ($this->Articles->isOwnedBy($articleId, $user['id'])) {
+	            return true;
+	        }
+	    }
+	
+	    return parent::isAuthorized($user);
 	}
 }

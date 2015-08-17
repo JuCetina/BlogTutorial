@@ -17,4 +17,9 @@ class ArticlesTable extends Table{
         $validator->notEmpty('title')->notEmpty('body'); //title y body no están vacíos
         return $validator;
     }
+
+    public function isOwnedBy($articleId, $userId)
+    {
+        return $this->exists(['id' => $articleId, 'user_id' => $userId]);
+    }
 }
