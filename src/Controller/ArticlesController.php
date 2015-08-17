@@ -63,7 +63,7 @@ class ArticlesController extends AppController{
 
 	public function isAuthorized($user)
 	{
-	    // Todos los uauarios registrados puede crear artículos
+	    // Todos los usuarios registrados pueden crear artículos
 	    if ($this->request->action === 'add') {
 	        return true;
 	    }

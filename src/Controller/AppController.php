@@ -38,7 +38,7 @@ class AppController extends Controller
     {
         $this->loadComponent('Flash');
         $this->loadComponent('Auth', [
-            'authorize' => ['Controller'], //Para poder usar isAuthorized
+            'authorize' => ['Controller'], //Para poder usar el método isAuthorized
             'loginRedirect' => [
                 'controller' => 'Articles',
                 'action' => 'index'
@@ -58,7 +58,7 @@ class AppController extends Controller
             return true;
         }
     
-        // Default se denega el acceso
+        // Si el rol no es 'admin' se denega el acceso
         return false;
     }
 
